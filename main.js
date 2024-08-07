@@ -49,6 +49,10 @@ decimalBtn.addEventListener('click', () => {
 });
 
 equalBtn.addEventListener('click', () => {
+  if (currentValue === 'Error') {
+    return;
+  }
+
   calculate();
 
   if (currentValue.length >= 10) {
@@ -67,12 +71,13 @@ clearBtn.addEventListener('click', () => {
 
 function handleNumber(num) {
   // Prevents user from entering a number
-  if (
-    currentValue === '0' ||
-    currentValue === 'Error' ||
-    currentValue.length >= 10
-  ) {
+  if (currentValue === 'Error' || currentValue.length >= 10) {
     return;
+  }
+
+  // If currentValue is 0 let user enter a new number
+  if (currentValue === '0') {
+    currentValue = '';
   }
 
   currentValue += num;
@@ -83,14 +88,18 @@ function handleNumber(num) {
 // Handles interactions with Operators
 
 function handleOperator(op) {
-  // Handles negative starting numbers, works when Error is displayed
-  if ((currentValue === '' || currentValue === 'Error') && op === '-') {
+  // Allows negative starting numbers
+  if (currentValue === '' && op === '-') {
     currentValue = '-';
+    return;
+  } else if (currentValue === '-' && op === '-') {
+    return;
+  } else if (currentValue === '' && op !== '-') {
     return;
   }
 
-  // Prevents instances where user enters +, /, * if there is Error displaying or before entering a number
-  if ((currentValue === '' || currentValue === 'Error') && op !== '-') {
+  // Prevents entering an Operator if there is Error displaying
+  if (currentValue === 'Error') {
     return;
   }
 
@@ -129,6 +138,7 @@ function calculate() {
   // Unable to calculate if empty operator/values
   if (operator === '' || currentValue === '' || previousValue === '') {
     resetCalculator();
+    currentValue = 'Error';
     return;
   }
 
@@ -159,6 +169,7 @@ function calculate() {
   currentValue = roundNumber(result).toString();
   previousValue = '';
   operator = '';
+
   console.log(result);
   console.log(currentValue);
 }
