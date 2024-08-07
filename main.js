@@ -14,6 +14,9 @@ const deleteBtn = document.querySelector('.delete-btn');
 let operator = '';
 let previousValue = '';
 let currentValue = '';
+let result = '';
+
+// Interactions with buttons
 
 numberBtns.forEach((number) => {
   number.addEventListener('click', (event) => {
@@ -30,35 +33,64 @@ operatorBtns.forEach((operatorBtn) => {
   });
 });
 
-clearBtn.addEventListener('click', () => {
-  currentValue = '';
-  previousValue = '';
-  operator = '';
-  previousScreen.textContent = currentValue;
-  currentScreen.textContent = currentValue;
-});
-
 equalBtn.addEventListener('click', () => {
   calculate();
   previousScreen.textContent = '';
-  currentScreen.textContent = currentValue;
+  currentScreen.textContent = result;
 });
 
+clearBtn.addEventListener('click', () => {
+  resetCalculator();
+});
+
+// Handles interactions with Numbers
+
 function handleNumber(num) {
-  if (currentValue.length <= 8) {
-    currentValue += num;
-    console.log(currentValue);
+  // Handles instances if user wants to add another number if 0 is the currentValue
+  if (currentValue === '0' || result === 0) {
+    currentValue = '';
+    result = '';
   }
+
+  currentValue += num;
 }
 
+// Handles interactions with Operators
+
 function handleOperator(op) {
+  // Handles negative starting numbers
+  if (currentValue === '' && op === '-') {
+    currentValue = '-';
+    return;
+  }
+
+  // Automatic calculation after each increment step
+  if (previousValue !== '') {
+    calculate();
+  }
+
   operator = op;
   previousValue = currentValue;
   currentValue = '';
 }
 
+// Resets the calculator
+
+function resetCalculator() {
+  currentValue = '';
+  previousValue = '';
+  operator = '';
+  result = '';
+  previousScreen.textContent = currentValue;
+  currentScreen.textContent = currentValue;
+}
+
+// Handles calculation based on given values and operators
+
 function calculate() {
-  if (operator === '' || currentValue === '') {
+  // Unable to calculate if empty operator/values
+  if (operator === '' || currentValue === '' || previousValue === '') {
+    resetCalculator();
     return;
   }
 
@@ -67,25 +99,26 @@ function calculate() {
 
   switch (operator) {
     case '+':
-      currentValue = previousValue + currentValue;
+      result = previousValue + currentValue;
       break;
     case '-':
-      currentValue = previousValue - currentValue;
+      result = previousValue - currentValue;
       break;
     case 'x':
-      currentValue = previousValue * currentValue;
+      result = previousValue * currentValue;
       break;
     case '/':
       if (currentValue === 0) {
-        currentValue = 'Error';
+        result = 'Error';
       } else {
-        currentValue = previousValue / currentValue;
+        result = previousValue / currentValue;
       }
       break;
     default:
       break;
   }
 
+  currentValue = result;
   previousValue = '';
   operator = '';
 }
