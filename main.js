@@ -33,10 +33,30 @@ operatorBtns.forEach((operatorBtn) => {
   });
 });
 
+decimalBtn.addEventListener('click', () => {
+  // Prevents adding a decimal on those instances
+  if (
+    currentValue === '' ||
+    currentValue.includes('.') ||
+    currentValue.length === 10 ||
+    currentValue === 'Error'
+  ) {
+    return;
+  }
+
+  currentValue += '.';
+  currentScreen.textContent = currentValue;
+});
+
 equalBtn.addEventListener('click', () => {
   calculate();
+
+  if (currentValue.length >= 10) {
+    currentValue = 'Error';
+  }
+
   previousScreen.textContent = '';
-  currentScreen.textContent = result;
+  currentScreen.textContent = currentValue;
 });
 
 clearBtn.addEventListener('click', () => {
@@ -46,21 +66,31 @@ clearBtn.addEventListener('click', () => {
 // Handles interactions with Numbers
 
 function handleNumber(num) {
-  // Handles instances if user wants to add another number if 0 is the currentValue
-  if (currentValue === '0' || result === 0) {
-    currentValue = '';
-    result = '';
+  // Prevents user from entering a number
+  if (
+    currentValue === '0' ||
+    currentValue === 'Error' ||
+    currentValue.length >= 10
+  ) {
+    return;
   }
 
   currentValue += num;
+
+  console.log(currentValue);
 }
 
 // Handles interactions with Operators
 
 function handleOperator(op) {
-  // Handles negative starting numbers
-  if (currentValue === '' && op === '-') {
+  // Handles negative starting numbers, works when Error is displayed
+  if ((currentValue === '' || currentValue === 'Error') && op === '-') {
     currentValue = '-';
+    return;
+  }
+
+  // Prevents instances where user enters +, /, * if there is Error displaying or before entering a number
+  if ((currentValue === '' || currentValue === 'Error') && op !== '-') {
     return;
   }
 
@@ -72,6 +102,8 @@ function handleOperator(op) {
   operator = op;
   previousValue = currentValue;
   currentValue = '';
+
+  console.log(previousValue);
 }
 
 // Resets the calculator
@@ -83,6 +115,12 @@ function resetCalculator() {
   result = '';
   previousScreen.textContent = currentValue;
   currentScreen.textContent = currentValue;
+}
+
+// Rounds number to 3 decimals
+
+function roundNumber(num) {
+  return Math.round(num * 1000) / 1000;
 }
 
 // Handles calculation based on given values and operators
@@ -118,7 +156,9 @@ function calculate() {
       break;
   }
 
-  currentValue = result;
+  currentValue = roundNumber(result).toString();
   previousValue = '';
   operator = '';
+  console.log(result);
+  console.log(currentValue);
 }
