@@ -76,9 +76,14 @@ function handleNumber(num) {
 // Handles interactions with Operators
 
 function handleOperator(op) {
-  // Prevents entering an Operator if there is Error displaying
+  // Prevents entering an Operator if there is an error
 
   if (currentValue === 'Error') {
+    return;
+  }
+
+  // Prevents entering an Operator if number ends with a dot
+  if (currentValue.endsWith('.')) {
     return;
   }
 
@@ -179,6 +184,15 @@ function roundNumber(num) {
 function calculate() {
   // Unable to calculate if empty operator/values
   if (operator === '' || currentValue === '' || previousValue === '') {
+    resetCalculator();
+    currentValue = 'Error';
+    currentScreen.classList.add('error');
+    return;
+  }
+
+  // Unable to calculate if number ends with a dot
+
+  if (currentValue.endsWith('.')) {
     resetCalculator();
     currentValue = 'Error';
     currentScreen.classList.add('error');
