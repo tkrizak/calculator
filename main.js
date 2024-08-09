@@ -214,7 +214,7 @@ function calculate() {
       currentValue = subtract(previousValue, currentValue);
       break;
     case 'x':
-      currentValue = previousValue * currentValue;
+      currentValue = multiply(previousValue, currentValue);
       break;
     case '÷':
       if (currentValue === 0) {
@@ -256,6 +256,7 @@ function handleKeyEvents() {
       event.key === '*' ||
       event.key === '/'
     ) {
+      // Display correct operator
       let operatorKey = event.key;
 
       if (operatorKey === '*') {
