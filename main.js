@@ -20,6 +20,7 @@ let currentValue = '';
 numberBtns.forEach((number) => {
   number.addEventListener('click', (event) => {
     handleNumber(event.target.textContent);
+
     currentScreen.textContent = currentValue;
   });
 });
@@ -27,32 +28,20 @@ numberBtns.forEach((number) => {
 operatorBtns.forEach((operatorBtn) => {
   operatorBtn.addEventListener('click', (event) => {
     handleOperator(event.target.textContent);
+
     previousScreen.textContent = `${previousValue} ${operator}`;
     currentScreen.textContent = currentValue;
   });
 });
 
 decimalBtn.addEventListener('click', () => {
-  // Prevents adding a decimal on those instances
-  if (
-    currentValue === '' ||
-    currentValue.includes('.') ||
-    currentValue.length === 12 ||
-    currentValue === 'Error'
-  ) {
-    return;
-  }
+  handleDecimal();
 
-  currentValue += '.';
   currentScreen.textContent = currentValue;
 });
 
 equalBtn.addEventListener('click', () => {
   calculate();
-
-  if (currentValue === 'Error') {
-    currentScreen.classList.add('error');
-  }
 
   previousScreen.textContent = '';
   currentScreen.textContent = currentValue;
@@ -119,6 +108,23 @@ function handleOperator(op) {
   currentValue = '';
 }
 
+// Handles decimal
+
+function handleDecimal() {
+  // Prevents adding a decimal on those instances
+
+  if (
+    currentValue === '' ||
+    currentValue.includes('.') ||
+    currentValue.length === 12 ||
+    currentValue === 'Error'
+  ) {
+    return;
+  } else {
+    currentValue += '.';
+  }
+}
+
 // Handles deleting the current number
 
 function deleteValue() {
@@ -173,6 +179,7 @@ function calculate() {
   if (operator === '' || currentValue === '' || previousValue === '') {
     resetCalculator();
     currentValue = 'Error';
+    currentScreen.classList.add('error');
     return;
   }
 
@@ -196,6 +203,7 @@ function calculate() {
     case '÷':
       if (currentValue === 0) {
         currentValue = 'Error';
+        currentScreen.classList.add('error');
         return;
       } else {
         currentValue = divide(previousValue, currentValue);
@@ -210,6 +218,7 @@ function calculate() {
   if (currentValue.length > 12) {
     resetCalculator();
     currentValue = 'Error';
+    currentScreen.classList.add('error');
     return;
   }
 
@@ -218,3 +227,47 @@ function calculate() {
 
   console.log(currentValue);
 }
+
+// Keyboard support
+
+function handleKeyEvents() {
+  window.addEventListener('keydown', (event) => {
+    if (event.key >= '0' && event.key <= '9') {
+      handleNumber(event.key);
+      currentScreen.textContent = currentValue;
+    } else if (
+      event.key === '+' ||
+      event.key === '-' ||
+      event.key === '*' ||
+      event.key === '/'
+    ) {
+      let operatorKey = event.key;
+
+      if (operatorKey === '*') {
+        operatorKey = 'x';
+      }
+
+      if (operatorKey === '/') {
+        operatorKey = '÷';
+      }
+
+      handleOperator(operatorKey);
+      previousScreen.textContent = `${previousValue} ${operator}`;
+      currentScreen.textContent = currentValue;
+    } else if (event.key === '.') {
+      handleDecimal();
+      currentScreen.textContent = currentValue;
+    } else if (event.key === 'Backspace') {
+      deleteValue();
+      currentScreen.textContent = currentValue;
+    } else if (event.key === 'Enter') {
+      calculate();
+      previousScreen.textContent = '';
+      currentScreen.textContent = currentValue;
+    } else if (event.key === 'Delete') {
+      resetCalculator();
+    }
+  });
+}
+
+handleKeyEvents();
