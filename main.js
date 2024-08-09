@@ -14,7 +14,6 @@ const deleteBtn = document.querySelector('.delete-btn');
 let operator = '';
 let previousValue = '';
 let currentValue = '';
-let result = '';
 
 // Interactions with buttons
 
@@ -38,7 +37,7 @@ decimalBtn.addEventListener('click', () => {
   if (
     currentValue === '' ||
     currentValue.includes('.') ||
-    currentValue.length === 10 ||
+    currentValue.length === 12 ||
     currentValue === 'Error'
   ) {
     return;
@@ -49,18 +48,21 @@ decimalBtn.addEventListener('click', () => {
 });
 
 equalBtn.addEventListener('click', () => {
-  if (currentValue === 'Error') {
-    return;
-  }
-
   calculate();
 
-  if (currentValue.length >= 10) {
-    currentValue = 'Error';
+  if (currentValue === 'Error') {
+    currentScreen.classList.add('error');
   }
 
   previousScreen.textContent = '';
   currentScreen.textContent = currentValue;
+});
+
+deleteBtn.addEventListener('click', () => {
+  deleteValue();
+
+  currentScreen.textContent = currentValue;
+  console.log(currentValue);
 });
 
 clearBtn.addEventListener('click', () => {
@@ -71,7 +73,7 @@ clearBtn.addEventListener('click', () => {
 
 function handleNumber(num) {
   // Prevents user from entering a number
-  if (currentValue === 'Error' || currentValue.length >= 10) {
+  if (currentValue === 'Error' || currentValue.length >= 12) {
     return;
   }
 
@@ -88,10 +90,14 @@ function handleNumber(num) {
 // Handles interactions with Operators
 
 function handleOperator(op) {
-  // Allows negative starting numbers
+  // Handles negative starting numbers and prevents bugs with '-' operator
   if (currentValue === '' && op === '-') {
-    currentValue = '-';
-    return;
+    if (previousValue) {
+      return;
+    } else {
+      currentValue = '-';
+      return;
+    }
   } else if (currentValue === '-' && op === '-') {
     return;
   } else if (currentValue === '' && op !== '-') {
@@ -111,8 +117,16 @@ function handleOperator(op) {
   operator = op;
   previousValue = currentValue;
   currentValue = '';
+}
 
-  console.log(previousValue);
+// Handles deleting the current number
+
+function deleteValue() {
+  if (currentValue === '' || currentValue === 'Error') {
+    return;
+  }
+
+  currentValue = currentValue.slice(0, -1);
 }
 
 // Resets the calculator
@@ -121,12 +135,32 @@ function resetCalculator() {
   currentValue = '';
   previousValue = '';
   operator = '';
-  result = '';
+
   previousScreen.textContent = currentValue;
   currentScreen.textContent = currentValue;
+
+  currentScreen.classList.remove('error');
 }
 
-// Rounds number to 3 decimals
+// Functions to handle calculations
+
+function add(num1, num2) {
+  return num1 + num2;
+}
+
+function subtract(num1, num2) {
+  return num1 - num2;
+}
+
+function divide(num1, num2) {
+  return num1 / num2;
+}
+
+function multiply(num1, num2) {
+  return num1 * num2;
+}
+
+// Rounds a number to 3 decimals
 
 function roundNumber(num) {
   return Math.round(num * 1000) / 1000;
@@ -142,34 +176,45 @@ function calculate() {
     return;
   }
 
+  if (currentValue === 'Error') {
+    return;
+  }
+
   currentValue = Number(currentValue);
   previousValue = Number(previousValue);
 
   switch (operator) {
     case '+':
-      result = previousValue + currentValue;
+      currentValue = add(previousValue, currentValue);
       break;
     case '-':
-      result = previousValue - currentValue;
+      currentValue = subtract(previousValue, currentValue);
       break;
     case 'x':
-      result = previousValue * currentValue;
+      currentValue = previousValue * currentValue;
       break;
-    case '/':
+    case '÷':
       if (currentValue === 0) {
-        result = 'Error';
+        currentValue = 'Error';
+        return;
       } else {
-        result = previousValue / currentValue;
+        currentValue = divide(previousValue, currentValue);
       }
       break;
     default:
       break;
   }
 
-  currentValue = roundNumber(result).toString();
+  currentValue = roundNumber(currentValue).toString();
+
+  if (currentValue.length > 12) {
+    resetCalculator();
+    currentValue = 'Error';
+    return;
+  }
+
   previousValue = '';
   operator = '';
 
-  console.log(result);
   console.log(currentValue);
 }
