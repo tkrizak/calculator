@@ -51,7 +51,6 @@ deleteBtn.addEventListener('click', () => {
   deleteValue();
 
   currentScreen.textContent = currentValue;
-  console.log(currentValue);
 });
 
 clearBtn.addEventListener('click', () => {
@@ -72,13 +71,17 @@ function handleNumber(num) {
   }
 
   currentValue += num;
-
-  console.log(currentValue);
 }
 
 // Handles interactions with Operators
 
 function handleOperator(op) {
+  // Prevents entering an Operator if there is Error displaying
+
+  if (currentValue === 'Error') {
+    return;
+  }
+
   // Handles negative starting numbers and prevents bugs with '-' operator
   if (currentValue === '' && op === '-') {
     if (previousValue) {
@@ -93,14 +96,13 @@ function handleOperator(op) {
     return;
   }
 
-  // Prevents entering an Operator if there is Error displaying
-  if (currentValue === 'Error') {
-    return;
-  }
-
   // Automatic calculation after each increment step
   if (previousValue !== '') {
     calculate();
+
+    if (currentValue === 'Error') {
+      return;
+    }
   }
 
   operator = op;
@@ -202,6 +204,7 @@ function calculate() {
       break;
     case '÷':
       if (currentValue === 0) {
+        resetCalculator();
         currentValue = 'Error';
         currentScreen.classList.add('error');
         return;
@@ -224,11 +227,9 @@ function calculate() {
 
   previousValue = '';
   operator = '';
-
-  console.log(currentValue);
 }
 
-// Keyboard support
+// Handles keyboard support
 
 function handleKeyEvents() {
   window.addEventListener('keydown', (event) => {
