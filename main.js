@@ -123,15 +123,16 @@ function handleDecimal() {
   // Prevents adding a decimal on those instances
 
   if (
-    !currentValue ||
     currentValue.includes('.') ||
     currentValue.length === 12 ||
     currentValue === 'Error'
   ) {
     return;
-  } else {
-    currentValue += '.';
+  } else if (!currentValue) {
+    currentValue += '0';
   }
+
+  currentValue += '.';
 }
 
 // Handles deletion of last character from currentValue
