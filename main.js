@@ -14,6 +14,8 @@ const deleteBtn = document.querySelector('.delete-btn');
 let operator = '';
 let previousValue = '';
 let currentValue = '';
+let lastOperator = '';
+let lastValue = '';
 
 // Interactions with buttons
 
@@ -88,21 +90,21 @@ function handleOperator(op) {
   }
 
   // Handles negative starting numbers and prevents bugs with '-' operator
-  if (currentValue === '' && op === '-') {
+  if (!currentValue && op === '-') {
     if (previousValue) {
       return;
     } else {
       currentValue = '-';
       return;
     }
-  } else if (currentValue === '-' && op === '-') {
+  } else if (currentValue === '-' && op !== '') {
     return;
-  } else if (currentValue === '' && op !== '-') {
+  } else if (!currentValue && op !== '-') {
     return;
   }
 
   // Automatic calculation after each increment step
-  if (previousValue !== '') {
+  if (previousValue) {
     calculate();
 
     if (currentValue === 'Error') {
@@ -121,7 +123,7 @@ function handleDecimal() {
   // Prevents adding a decimal on those instances
 
   if (
-    currentValue === '' ||
+    !currentValue ||
     currentValue.includes('.') ||
     currentValue.length === 12 ||
     currentValue === 'Error'
@@ -132,10 +134,10 @@ function handleDecimal() {
   }
 }
 
-// Handles deleting the current number
+// Handles deletion of last character from currentValue
 
 function deleteValue() {
-  if (currentValue === '' || currentValue === 'Error') {
+  if (!currentValue || currentValue === 'Error') {
     return;
   }
 
@@ -148,6 +150,8 @@ function resetCalculator() {
   currentValue = '';
   previousValue = '';
   operator = '';
+  lastOperator = '';
+  lastValue = '';
 
   previousScreen.textContent = currentValue;
   currentScreen.textContent = currentValue;
@@ -173,35 +177,52 @@ function multiply(num1, num2) {
   return num1 * num2;
 }
 
-// Rounds a number to 3 decimals
+// Utility, rounds a number to 4 decimals
 
 function roundNumber(num) {
-  return Math.round(num * 1000) / 1000;
+  return Math.round(num * 10000) / 10000;
 }
 
+// Utility, displays error and resets calculator
+
+function showError() {
+  resetCalculator();
+  currentValue = 'Error';
+  currentScreen.classList.add('error');
+}
+
+// CALCULATION
 // Handles calculation based on given values and operators
 
 function calculate() {
+  // If operator and previousValue are empty, calculate with lastOperator and lastValue from last calculation if available (for equals button click)
+
+  if (!operator && !previousValue && lastOperator && lastValue) {
+    operator = lastOperator;
+    previousValue = currentValue;
+    currentValue = lastValue;
+  }
+
   // Unable to calculate if empty operator/values
-  if (operator === '' || currentValue === '' || previousValue === '') {
-    resetCalculator();
-    currentValue = 'Error';
-    currentScreen.classList.add('error');
+
+  if (!operator || !currentValue || !previousValue) {
+    showError();
     return;
   }
 
-  // Unable to calculate if number ends with a dot
+  // Unable to calculate if any currentValue ends with a dot
 
   if (currentValue.endsWith('.')) {
-    resetCalculator();
-    currentValue = 'Error';
-    currentScreen.classList.add('error');
+    showError();
     return;
   }
 
-  if (currentValue === 'Error') {
-    return;
-  }
+  // Stores operator and currentValue  for future use
+
+  lastOperator = operator;
+  lastValue = currentValue;
+
+  // Converts values to numbers from strings
 
   currentValue = Number(currentValue);
   previousValue = Number(previousValue);
@@ -218,9 +239,7 @@ function calculate() {
       break;
     case '÷':
       if (currentValue === 0) {
-        resetCalculator();
-        currentValue = 'Error';
-        currentScreen.classList.add('error');
+        showError();
         return;
       } else {
         currentValue = divide(previousValue, currentValue);
@@ -230,12 +249,14 @@ function calculate() {
       break;
   }
 
+  // Converts result to a string and rounds it to 5 decimals
+
   currentValue = roundNumber(currentValue).toString();
 
+  // If result is longer than 12 characters show error
+
   if (currentValue.length > 12) {
-    resetCalculator();
-    currentValue = 'Error';
-    currentScreen.classList.add('error');
+    showError();
     return;
   }
 
@@ -256,7 +277,8 @@ function handleKeyEvents() {
       event.key === '*' ||
       event.key === '/'
     ) {
-      // Display correct operator
+      // Convert keyboard operators to correct operators used in code
+
       let operatorKey = event.key;
 
       if (operatorKey === '*') {
